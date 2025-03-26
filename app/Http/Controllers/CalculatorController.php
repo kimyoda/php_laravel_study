@@ -21,7 +21,7 @@ class CalculatorController extends Controller
             // 수식계산시도
             $result = eval('return ' . trim($expression) . ';');
             $message = "계산 결과는 {$result}입니다!";
-        }  catch(\Throwable $e) {
+        } catch (\Throwable $e) {
             // 에러 발생 시
             $isValid = false;
             $message = "잘못된 수식입니다!";
