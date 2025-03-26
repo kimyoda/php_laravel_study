@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CalculatorController;
 use App\Models\Fruit;
 use App\Models\Quiz;
 use Illuminate\Support\Facades\Route;
@@ -8,6 +9,10 @@ use Illuminate\Http\Request;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// 우선 지난번처럼 미들웨어를 사용해서 일단은 동작, api.php를 통해 하는 방법에 관하여 문의
+Route::withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+    ->post('/api/calc', [CalculatorController::class, 'calculate']);
 
 Route::withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
     ->post('/fruit', function (Request $request) {
