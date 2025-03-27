@@ -10,6 +10,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// 값을 받아오는
+Route::get('/api/history', [CalculatorController::class, 'calculateHistory']);
+
 // 우선 지난번처럼 미들웨어를 사용해서 일단은 동작, api.php를 통해 하는 방법에 관하여 문의
 Route::withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
     ->post('/api/calc', [CalculatorController::class, 'calculate']);
