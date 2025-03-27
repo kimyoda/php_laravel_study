@@ -118,7 +118,7 @@ class CalculatorController extends Controller
             ], 404);
         }
         // 정규식으로 수식을 검증한다(이건 주임님께 문의, 정규표현식은 구글검색 후 사용)
-        // 특수기호, 숫자, 연산수칙,
+        // 숫자, 연산자, 괄호, 공백만 포함
         if (!preg_match("#^[0-9+\-*/().\s]+$#", $expression)) {
             // 수식이 잘못된 경우
             $calc->update([
