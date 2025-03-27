@@ -16,11 +16,15 @@ class CalculatorController extends Controller
             $result = eval('return ' . trim($expression) . ';');
 
             // DB 저장
-            Calculation::create([
+            // 컨트롤러에서 타입자체선언을 잘 안쓴다. 접근이 자동이 안된다.
+            // 주로 아래와 같이 코딩을 해서 숙지 바란다. php 특성
+            /** @var Calculation $calc */
+            $calc = Calculation::create([
                 'expressions' => $expression,
                 'result' => $result,
                 'is_valid' => true,
             ]);
+
 
             return response()->json([
                 'message' => "계산 결과는 {$result}입니다!",
@@ -55,7 +59,7 @@ class CalculatorController extends Controller
         }
 
         // orderBy로 최근 값을 정렬시켜 조회
-        $calculations = $query->take($count)->get();
+        $calc = $query->take($count)->get();
 //        $calculations = Calculation::where('is_valid', true)
 //            ->orderBy('created_at', 'desc')
 //            ->take($count)
@@ -67,7 +71,7 @@ class CalculatorController extends Controller
 //        });
 
         // 번호 붙이는 함수 적용(유효하지 않은 값이 적용될 때도 적용)
-        $numberedResult = $calculations->map(function ($el, $idx) {
+        $numberedResult = $calc->map(function ($el, $idx) {
             $prefix = ($idx + 1) . '번째: ';
             $message = $el->is_valid ? $el->result : "[오류 결과] {$el->result}";
             return $prefix . $message;
@@ -75,7 +79,7 @@ class CalculatorController extends Controller
 
         // 결과값을 json을 통해 응답해주기
         return response()->json([
-            'message' => "최신부터 {$calculations->count()}개의 계산값입니다.",
+            'message' => "최신부터 {$calc->count()}개의 계산값입니다.",
             'data' => $numberedResult
         ]);
     }
@@ -84,19 +88,106 @@ class CalculatorController extends Controller
     public function deleteCalculation($id)
     {
         // ID로 기록을 찾는다.
-        $calculation = Calculation::find($id);
+        $calc = Calculation::find($id);
 
         // 만약 해당 id가 없을 시 해당 아이디가 없다는 호출해주기
-        if (!$calculation) {
+        if (!$calc) {
             return response()->json([
-               'message' => "해당 {$id}의 계산 기록을 찾을 수 없습니다."
+                'message' => "해당 {$id}의 계산 기록을 찾을 수 없습니다."
             ], 404);
         }
         // 삭제 처리
-        $calculation->delete();
+        $calc->delete();
 
         return response()->json([
-           'message' => "ID {$id}번째의 계산 기록이 성공적으로 삭제됐습니다!"
+            'message' => "ID {$id}번째의 계산 기록이 성공적으로 삭제됐습니다!"
+        ]);
+    }
+
+    // 업데이트 함수 만들어보기
+    public function updatedCalculation(Request $request, $id)
+    {
+        $expression = $request->input('expressions');
+
+        // ID로 찾기
+        $calc = Calculation::find($id);
+
+        if(!$calc) {
+            return response()->json([
+                'message' => "ID {$id}번 계산 기록을 찾을 수 없습니다."
+            ], 404);
+        }
+        // 정규식으로 수식을 검증한다(이건 주임님께 문의, 정규표현식은 구글검색 후 사용)
+        // 특수기호, 숫자, 연산수칙,
+        if (!preg_match("#^[0-9+\-*/().\s]+$#", $expression)) {
+            // 수식이 잘못된 경우
+            $calc->update([
+               'expressions' => $expression,
+                'result' => 0,
+                'is_valid' => false,
+            ]);
+
+            return response()->json([
+               'message' => "잘못된 수식입니다!",
+                'data' => [
+                    'expressions' => $expression,
+                    'result' => 0,
+                    'is_valid' => false
+                ]
+            ], 400);
+        }
+
+        // 정규식은 통과했지만 수식 자체가 잘못된 경우도 있으므로 try-catch
+        try {
+            $result = eval('return ' . trim($expression) . ';');
+
+            $calc->update([
+                'expressions' => $expression,
+                'result' => $result,
+                'is_valid' => true,
+            ]);
+
+            return response()->json([
+                'message' => "ID {$id}번 계산식이 수정되었습니다!",
+                'data' => [
+                    'expressions' => $expression,
+                    'result' => $result,
+                    'is_valid' => true,
+                ]
+            ]);
+        } catch (\Throwable $e) {
+            $calc->update([
+                'expressions' => $expression,
+                'result' => 0,
+                'is_valid' => false,
+            ]);
+
+            return response()->json([
+                'message' => "계산 중 오류가 발생했습니다!",
+                'data' => [
+                    'expressions' => $expression,
+                    'result' => 0,
+                    'is_valid' => false
+                ]
+            ], 400);
+        }
+
+        // 수식이 유효한 경우
+        $result = eval('return ' . trim($expression) . ';');
+
+        $calc->update([
+            'expressions' => $expression,
+            'result' => $result,
+            'is_valid' => true,
+        ]);
+        // 새롭게 업데이트 된 값을 리턴한다.
+        return response()->json([
+            'message' => "ID {$id}번 계산식이 수정 되었습니다!",
+            'data' => [
+                'expressions' => $expression,
+                'result' => $result,
+                'is_valid' => true,
+            ]
         ]);
     }
 

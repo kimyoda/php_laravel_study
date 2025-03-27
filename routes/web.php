@@ -6,6 +6,7 @@ use App\Models\Quiz;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -19,6 +20,9 @@ Route::withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken
 // 우선 지난번처럼 미들웨어를 사용해서 일단은 동작, api.php를 통해 하는 방법에 관하여 문의
 Route::withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
     ->post('/api/calc', [CalculatorController::class, 'calculate']);
+
+// 업데이트 주소 넣기
+Route::withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])->put('/api/update/{id}', [CalculatorController::class, 'updatedCalculation']);
 
 Route::withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
     ->post('/fruit', function (Request $request) {
