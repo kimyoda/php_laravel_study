@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 class CalculatorController extends Controller
 {
+    // 계산식의 값을 db에 저장하는 함수
     public function calculate(Request $request)
     {
         // JSON 요청에서 값 받기
@@ -38,7 +39,7 @@ class CalculatorController extends Controller
         }
     }
 
-    // 계산 목록을 가져오는 함수
+    // 계산 목록을 가져오는 함수(Get)
     public function calculateHistory(Request $request)
     {
         // 클라이언트에서 값 받아오기, 기본 1개
@@ -78,4 +79,25 @@ class CalculatorController extends Controller
             'data' => $numberedResult
         ]);
     }
+
+    // delete 함수 만들어보기
+    public function deleteCalculation($id)
+    {
+        // ID로 기록을 찾는다.
+        $calculation = Calculation::find($id);
+
+        // 만약 해당 id가 없을 시 해당 아이디가 없다는 호출해주기
+        if (!$calculation) {
+            return response()->json([
+               'message' => "해당 {$id}의 계산 기록을 찾을 수 없습니다."
+            ], 404);
+        }
+        // 삭제 처리
+        $calculation->delete();
+
+        return response()->json([
+           'message' => "ID {$id}번째의 계산 기록이 성공적으로 삭제됐습니다!"
+        ]);
+    }
+
 }
