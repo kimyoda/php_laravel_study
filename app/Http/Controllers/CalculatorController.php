@@ -112,7 +112,7 @@ class CalculatorController extends Controller
         // ID로 찾기
         $calc = Calculation::find($id);
 
-        if(!$calc) {
+        if (!$calc) {
             return response()->json([
                 'message' => "ID {$id}번 계산 기록을 찾을 수 없습니다."
             ], 404);
@@ -122,13 +122,13 @@ class CalculatorController extends Controller
         if (!preg_match("#^[0-9+\-*/().\s]+$#", $expression)) {
             // 수식이 잘못된 경우
             $calc->update([
-               'expressions' => $expression,
+                'expressions' => $expression,
                 'result' => 0,
                 'is_valid' => false,
             ]);
 
             return response()->json([
-               'message' => "잘못된 수식입니다!",
+                'message' => "잘못된 수식입니다!",
                 'data' => [
                     'expressions' => $expression,
                     'result' => 0,
@@ -137,7 +137,7 @@ class CalculatorController extends Controller
             ], 400);
         }
 
-        // 정규식은 통과했지만 수식 자체가 잘못된 경우도 있으므로 try-catch
+        // 정규식은 통과 후 실제 계산 수식 자체가 잘못된 경우도 있으므로 try-catch
         try {
             $result = eval('return ' . trim($expression) . ';');
 
@@ -156,6 +156,7 @@ class CalculatorController extends Controller
                 ]
             ]);
         } catch (\Throwable $e) {
+            // eval 오류 발생 시
             $calc->update([
                 'expressions' => $expression,
                 'result' => 0,
@@ -171,24 +172,5 @@ class CalculatorController extends Controller
                 ]
             ], 400);
         }
-
-        // 수식이 유효한 경우
-        $result = eval('return ' . trim($expression) . ';');
-
-        $calc->update([
-            'expressions' => $expression,
-            'result' => $result,
-            'is_valid' => true,
-        ]);
-        // 새롭게 업데이트 된 값을 리턴한다.
-        return response()->json([
-            'message' => "ID {$id}번 계산식이 수정 되었습니다!",
-            'data' => [
-                'expressions' => $expression,
-                'result' => $result,
-                'is_valid' => true,
-            ]
-        ]);
     }
-
 }
