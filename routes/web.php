@@ -13,7 +13,8 @@ Route::get('/', function () {
 
 // 값을 받아오는
 //Route::get('/api/history', [CalculatorController::class, 'calculateHistory']);
-Route::get('/api/history', [CalculatorController::class, 'getCachedCalculation']);
+Route::get('/redis/get', [CalculatorController::class, 'testSimpleGet']);
+Route::withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])->post('/redis/set', [CalculatorController::class, 'testSimpleSet']);
 
 // 삭제하는 route
 Route::withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])->delete('api/delete/{id}', [CalculatorController::class, 'deleteCalculation']);

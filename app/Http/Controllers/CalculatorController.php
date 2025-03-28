@@ -5,9 +5,26 @@ namespace App\Http\Controllers;
 use App\Models\Calculation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 
 class CalculatorController extends Controller
 {
+
+    // Redis에 간단한 문자식 추가하기(post)
+    public function testSimpleSet(Request $request)
+    {
+        // key와 value 만들기
+        $key = $request->input('key');
+        $value = $request->input('value');
+
+        Redis::set($key, $value);
+
+        return response()->json([
+           'message' =>  'Redis에 저장 완료!!',
+            'key' => $key,
+            'value' => $value
+        ]);
+    }
     // 계산식의 값을 db에 저장하는 함수
     public function calculate(Request $request)
     {
@@ -46,6 +63,18 @@ class CalculatorController extends Controller
 
     // 계산 목록을 가져오는 함수(Get)
     // redis 관련 코드
+    public function testSimpleGet(Request $request)
+    {
+        $key = $request->input('key');
+        $value = Redis::get($key);
+
+        return response()->json([
+            'message' => 'Redis에서 조회 성공!!',
+            'key' => $key,
+            'value' => $value
+        ]);
+    }
+
     public function getCachedCalculation()
     {
         $cacheKey = 'calc_history:all';
